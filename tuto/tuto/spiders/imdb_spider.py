@@ -6,9 +6,16 @@ from typing import Optional
 
 @dataclass
 class IMDBMovie:
-    title: str] = field(default=None)
-    director: Optional[float] = field(default=None)
-    year: Optional[int] = field(default=None)
+    title: Optional[str] = field(default=None)
+    original_title: Optional[str] = field(default=None)
+    score: Optional[float] = field(default=None)
+    genre: Optional[str] = field(default=None)
+    date: Optional[int] = field(default=None)
+    length_in_minutes: Optional[int] = field(default=None)
+    synopsis: Optional[str] = field(default=None)
+    directors: Optional[list(str)] = field(default=None)
+    actors: Optional[list(str)] = field(default=None)
+    mpaa: 
 
 
 class IMDBSpider(CrawlSpider):
