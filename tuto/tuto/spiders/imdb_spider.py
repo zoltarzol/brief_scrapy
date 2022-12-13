@@ -1,22 +1,19 @@
 import scrapy
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
-from dataclasses import dataclass, field
-from typing import Optional
+from scrapy.spiders import CrawlSpider
+from scrapy.http import HtmlResponse
+# from dataclasses import dataclass, field
+# from typing import Optional
 
-@dataclass
-class IMDBMovie:
-    title: Optional[str] = field(default=None)
-    original_title: Optional[str] = field(default=None)
-    score: Optional[float] = field(default=None)
-    genre: Optional[str] = field(default=None)
-    date: Optional[int] = field(default=None)
-    length_in_minutes: Optional[int] = field(default=None)
-    synopsis: Optional[str] = field(default=None)
-    directors: Optional[list(str)] = field(default=None)
-    actors: Optional[list(str)] = field(default=None)
-    mpaa: 
-
+class IMDBMovie(scrapy.Item):
+    title = scrapy.Field()
+    original_title = scrapy.Field()
+    score = scrapy.Field()
+    genre = scrapy.Field()
+    release_date = scrapy.Field()
+    length_in_minutes = scrapy.Field()
+    synopsis = scrapy.Field()
+    directors = [scrapy.Field()]
+    actors = scrapy.Field()
 
 class IMDBSpider(CrawlSpider):
     name = "IMDB"
@@ -24,33 +21,28 @@ class IMDBSpider(CrawlSpider):
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
     start_urls = ['https://www.imdb.com/chart/top/']
     lang = 'fr-FR'
-    itertag = 'item'
+    movies = [IMDBMovie()]
 
     def start_requests(self):
         urls = [
-            'https://www.imdb.com/chart/top/',
+            # 'https://www.imdb.com/chart/top/',
+            'https://www.imdb.com/title/tt0111161',
         ]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse, headers={'User-Agent': self.user_agent , 'Accept-Language': self.lang })
-
-    # def parse(self, response):
-    #     item = scrapy.Item()
-    #     item['rank'] = response.xpath('//div[@class="lister"]/text()')
-    #     item['name'] = response.xpath('//td[@id="item_name"]/text()').get()
-    #     item['description'] = response.xpath('//td[@id="item_description"]/text()').get()
-    #     item['link_text'] = response.meta['link_text']
-
-
+    
     def parse(self, response):
-        item = IMDBMovie()
-        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-        item['title'] = response.xpath('//td[@class="titleColumn"]/text').get()
-        print(item['title'])
-        # print(response.xpath('//td[@class="titleColumn"]').getall())
-        # print(response.xpath('//span[@class="secondaryInfo"]').get())
+        print(response.xpath('//a[@class="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"]/text()').getall()[16])
+        # for movie in response.xpath('//div[@class="lister"]').getall():
+        #     self.movies.append(IMDBMovie(
+        #         title = HtmlResponse(movie).xpath('//*[@class="titleColumn"]/text()').get(),
+        #         release_date = HtmlResponse(movie).xpath('//*[@class="secondaryInfo"]/text()').get()
+        #         ))
+        #     yield movie
 
-        # item["releaseDate"] = response.xpath('//span[@class="secondaryInfo"]').get()
-        # print(item["rank_name_year"])
-        # item['name'] = response.xpath('//td[@id="item_name"]/text()').get()
-        # item['description'] = response.xpath('//td[@id="item_description"]/text()').get()
-        # item['link_text'] = response.meta['link_text']
+            
+
+        # movies = [IMDBMovie()]
+        # movies[0]['title'] = []
+        # movies[0]['title'].extend(['toto'])
+        # print(movies[0]['title'][0])
