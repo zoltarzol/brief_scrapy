@@ -12,7 +12,7 @@ class IMDBMovie(scrapy.Item):
     original_title = scrapy.Field()
     score = scrapy.Field()
     genre = scrapy.Field()
-    release_date = scrapy.Field()
+    release_year = scrapy.Field()
     length_in_minutes = scrapy.Field()
     synopsis = scrapy.Field()
     # ce sera une liste car certains films ont plusieurs réalisateurs

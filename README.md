@@ -15,6 +15,21 @@ On movie details page:
 Langue origine
 	response.xpath('//a[@class="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"]/text()').getall()[16]
 
+Per movie page:
+
+rank = 
+title = eKrKux
+original_title = 
+score = 
+genre = 
+release_year = WIUyh[0]
+length_in_minutes = 
+synopsis = 
+directors = 
+actors = response.xpath('//a[@data-testid="title-cast-item__actor"]/text()').getall()
+public = WIUyh[1]
+country_of_origin (list) = response.xpath('//a[contains(concat(" ", @href, " "), "country_of_origin")]/text()').getall()
+original_languages = response.xpath('//a[contains(concat(" ", @href, " "), "primary_language")]/text()').getall()
 
 
 <td class="titleColumn">
