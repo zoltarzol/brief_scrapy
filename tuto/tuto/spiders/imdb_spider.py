@@ -1,27 +1,11 @@
-import scrapy, re
-from scrapy.spiders import CrawlSpider
-from scrapy.http import HtmlResponse
+import scrapy #, re
+from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider, Rule
+from tuto.items import IMDBMovie
+
+# from scrapy.http import HtmlResponse
 # from dataclasses import dataclass, field
 # from typing import Optional
-
-class IMDBMovie(scrapy.Item):
-    title = scrapy.Field()
-    # non demandé dans les consignes, mais scrapé par acquis de conscience, car si les données finissent mélangées, le score avec une seule décimale ne permettra pas de reconstituer la liste dans l'ordre
-    rank = scrapy.Field()
-    # original_title = scrapy.Field()
-    # score = scrapy.Field()
-    # genre = scrapy.Field()
-    release_date = scrapy.Field()
-    # length_in_minutes = scrapy.Field()
-    # synopsis = scrapy.Field()
-    # # ce sera une liste car certains films ont plusieurs réalisateurs
-    # directors = scrapy.Field()
-    # actors = scrapy.Field()
-    # public = scrapy.Field()
-    # country_of_origin = scrapy.Field()
-    # # ce sera une liste car certains films sont d'origine dans plusieurs langues
-    # original_languages = scrapy.Field()
-    
 
 class IMDBSpider(CrawlSpider):
     name = "IMDB"
@@ -29,12 +13,14 @@ class IMDBSpider(CrawlSpider):
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
     start_urls = ['https://www.imdb.com/chart/top/']
     custom_settings = {
-    # spécifie l'ordre d'export des attributs de IMDBMovie dans le CSV résultant
-    'FEED_EXPORT_FIELDS': ["title", "rank", "release_date"],
+    # spécifie l'ordre d'export des attributs de IMDBMovie (dans le CSV résultant par exemple)
+    'FEED_EXPORT_FIELDS': ["rank", "title", "release_date"],
     }
-
     lang = 'fr-FR'
     movies = [IMDBMovie()]
+    rules = (
+        Rule(LinkExtractor(allow=(), restrict_xpaths=('//td[@class="titleColumn"]',)), callback="parse_items", follow= True),
+    )
 
     def start_requests(self):
         urls = self.start_urls
@@ -42,17 +28,22 @@ class IMDBSpider(CrawlSpider):
             yield scrapy.Request(url=url, callback=self.parse, headers={'User-Agent': self.user_agent , 'Accept-Language': self.lang })
     
     def parse(self, response):
-        for title, release_date in zip(
+        # Pour pour tard : problème non résolu de la récupération du rank dans le code HTML
+        # Le souci vient de passages à la ligne à l'intérieur des balises que vise le XPath
+        # Cela engendre la récupération par getall() de 3 champs pour 1 réel, et donc d'un
+        # total de 750 champs au lieu des 250 visés.
+        # Le XPath utilisé est le suivant : response.xpath('//*[@class="titleColumn"]/text()')
+        # Le problème (ou plutôt la limitation, car dans la philosophie Scrapy, c'est un résultat
+        # attendu) est connue et référencée dans le GitHub de Scrapy :
+        # https://github.com/scrapy/parsel/issues/128
+        # Ma solution de contournement se trouve ci-dessous.
+
+        rank_list_with_newline_elements_to_remove = response.xpath('//td[@class="titleColumn"]/text()').getall()
+        rank_list_cleaned = [i.strip().replace('\n','').replace('.','') for i in rank_list_with_newline_elements_to_remove[::3]]
+
+        for title, release_date, rank in zip(
             response.xpath('//td[@class="titleColumn"]/a/text()').getall(),
-            response.xpath('//span[@class="secondaryInfo"]/text()').getall():
-            for a in response.xpath('//*[@class="titleColumn"]/text()'):
-                print(a)
-            # .xpath('//*[@class="titleColumn"]/text()').text_content()):
-            # print(len(rank))
+            response.xpath('//span[@class="secondaryInfo"]/text()').getall(),
+            rank_list_cleaned):
             movie_item = IMDBMovie(title=title, release_date=release_date.strip('()'), rank=rank)
             yield movie_item
-
-        # movies = [IMDBMovie()]
-        # movies[0]['title'] = []
-        # movies[0]['title'].extend(['toto'])
-        # print(movies[0]['title'][0])
