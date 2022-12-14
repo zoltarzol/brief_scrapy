@@ -42,10 +42,12 @@ class IMDBSpider(CrawlSpider):
             yield scrapy.Request(url=url, callback=self.parse, headers={'User-Agent': self.user_agent , 'Accept-Language': self.lang })
     
     def parse(self, response):
-        for title, release_date, rank in zip(
+        for title, release_date in zip(
             response.xpath('//td[@class="titleColumn"]/a/text()').getall(),
-            response.xpath('//span[@class="secondaryInfo"]/text()').getall(),
-            response.xpath('//*[@class="titleColumn"]/text()').getall()):
+            response.xpath('//span[@class="secondaryInfo"]/text()').getall():
+            for a in response.xpath('//*[@class="titleColumn"]/text()'):
+                print(a)
+            # .xpath('//*[@class="titleColumn"]/text()').text_content()):
             # print(len(rank))
             movie_item = IMDBMovie(title=title, release_date=release_date.strip('()'), rank=rank)
             yield movie_item
