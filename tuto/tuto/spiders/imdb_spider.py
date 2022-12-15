@@ -11,12 +11,12 @@ class IMDBSpider(CrawlSpider):
     name = "IMDB"
     allowed_domains = ['imdb.com']
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-    start_urls = ['https://www.imdb.com/title/tt0482571/']
+    start_urls = ['https://www.imdb.com/chart/top/']
     custom_settings = {
     # spécifie l'ordre d'export des attributs de IMDBMovie (dans le CSV résultant par exemple)
-    'FEED_EXPORT_FIELDS': ["rank", "title", "release_year"],
+    'FEED_EXPORT_FIELDS': ["title"],
     }
-    lang = 'fr-FR'
+    lang = 'en-US'
     limit = 10
     movies = [IMDBMovie()]
 
@@ -36,7 +36,7 @@ class IMDBSpider(CrawlSpider):
         
     # premiers tests, avant l'utilisation de parse_items    
     def parse(self, response):
-        country_of_origin = response.xpath('//a[@data-testid="title-cast-item__actor"]/text()').getall()
+        country_of_origin = response.xpath('//td[@class="titleColumn"]/a/text()').getall()
         print(country_of_origin)
 
 
