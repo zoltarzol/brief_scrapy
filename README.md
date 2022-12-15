@@ -30,7 +30,7 @@ temp = response.xpath('//ul[contains(concat(" ", @class, " "), "kqWovI")]/li[@cl
             length_in_minutes = int(temp[0])
 
 synopsis = response.xpath('//*[contains(concat(" ", @class, " "), "gXUyNh")]/text()').getall()[0]
-directors = ?????
+directors = response.xpath('//div[contains(concat(" ", @class, " "), "fjLeDR")]//a[contains(concat(" ", @href, " "), "tt_ov_dr")]/text()').getall()
 actors = response.xpath('//a[@data-testid="title-cast-item__actor"]/text()').getall()
 public = response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()[1]
 countries_of_origin (list) = response.xpath('//a[contains(concat(" ", @href, " "), "country_of_origin")]/text()').getall()
