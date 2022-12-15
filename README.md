@@ -49,6 +49,7 @@ conda install -c plotly plotly_express
 conda install mongodb-compass
 conda install networkx
 conda install seaborn
+pip3 install 'pymongo[srv]'
 
 --on tente
 conda install streamlit

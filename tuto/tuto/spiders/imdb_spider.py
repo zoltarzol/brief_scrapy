@@ -11,7 +11,7 @@ class IMDBSpider(CrawlSpider):
     name = "IMDB"
     allowed_domains = ['imdb.com']
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-    start_urls = ['https://www.imdb.com/title/tt6710474']
+    start_urls = ['https://www.imdb.com/title/tt0190590']
     custom_settings = {
     # spécifie l'ordre d'export des attributs de IMDBMovie (dans le CSV résultant par exemple)
     'FEED_EXPORT_FIELDS': ["title"],
@@ -37,7 +37,8 @@ class IMDBSpider(CrawlSpider):
     # premiers tests, avant l'utilisation de parse_items    
     def parse(self, response):
         print(response._get_url())
-        temp = response.xpath('//ul[contains(concat(" ", @class, " "), "jvByYy")]//a[contains(concat(" ", @href, " "), "name")]/text()').getall()
+        temp = response.xpath('//div[contains(concat(" ", @class, " "), "fjLeDR")]//a[contains(concat(" ", @href, " "), "tt_ov_dr")]/text()').getall()
+        
         print("----------------------------------------------------")
         print(temp)
         print("----------------------------------------------------")
