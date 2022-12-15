@@ -1,9 +1,9 @@
-import scrapy #, re
+import scrapy, re
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from tuto.items import IMDBMovie
 from scrapy.exceptions import CloseSpider
-# from scrapy.http import HtmlResponse
+from scrapy.http import HtmlResponse
 # from dataclasses import dataclass, field
 # from typing import Optional
 
@@ -11,12 +11,12 @@ class IMDBSpider(CrawlSpider):
     name = "IMDB"
     allowed_domains = ['imdb.com']
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-    start_urls = ['https://www.imdb.com/chart/top/']
+    start_urls = ['https://www.imdb.com/title/tt6710474']
     custom_settings = {
     # spécifie l'ordre d'export des attributs de IMDBMovie (dans le CSV résultant par exemple)
     'FEED_EXPORT_FIELDS': ["title"],
     }
-    lang = 'en-US'
+    lang = 'fr_FR'
     limit = 10
     movies = [IMDBMovie()]
 
@@ -36,11 +36,11 @@ class IMDBSpider(CrawlSpider):
         
     # premiers tests, avant l'utilisation de parse_items    
     def parse(self, response):
-        country_of_origin = response.xpath('//td[@class="titleColumn"]/a/text()').getall()
-        print(country_of_origin)
-
-
-
+        print(response._get_url())
+        temp = response.xpath('//ul[contains(concat(" ", @class, " "), "jvByYy")]//a[contains(concat(" ", @href, " "), "name")]/text()').getall()
+        print("----------------------------------------------------")
+        print(temp)
+        print("----------------------------------------------------")
 
 
         # # Pour pour tard : problème non résolu de la récupération du rank dans le code HTML

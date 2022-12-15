@@ -10,24 +10,30 @@ Title
 	response.xpath('//*[@class="titleColumn"]/text()').get()
 
 On movie details page:
-	start_urls = ['https://www.imdb.com/title/tt0111161']
+	start_urls = ['https://www.imdb.com/title/tt011111']
 	
 Langue origine
 	response.xpath('//a[@class="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"]/text()').getall()[16]
 
 Per movie page:
 
-title = eKrKux
-original_title = gwBsXc
-score = jGRxWM[1]
-genre = bYNgQ t$
-release_year = WIUyh[0]
-length_in_minutes = 
-synopsis = 
-directors = 
+title = response.xpath('//*[contains(concat(" ", @class, " "), "eKrKux")]/text()').getall()[0]
+original_title = re.findall(': (.*)',response.xpath('//*[contains(concat(" ", @class, " "), "gwBsXc")]/text()').getall()[0])
+score = response.xpath('//*[contains(concat(" ", @class, " "), "jGRxWM")]/text()').getall()[0]
+genres = response.xpath('//a[contains(concat(" ", @class, " "), "bYNgQ")]/span[@class="ipc-chip__text"]/text()').getall()
+release_year = response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()[0]
+
+temp = response.xpath('//ul[contains(concat(" ", @class, " "), "kqWovI")]/li[@class="ipc-inline-list__item"]/text()').getall()
+        if(len(temp)>2):
+            length_in_minutes = int(temp[0])*60 + int(temp[3])
+        else:
+            length_in_minutes = int(temp[0])
+
+synopsis = response.xpath('//*[contains(concat(" ", @class, " "), "gXUyNh")]/text()').getall()[0]
+directors = ?????
 actors = response.xpath('//a[@data-testid="title-cast-item__actor"]/text()').getall()
-public = WIUyh[1]
-country_of_origin (list) = response.xpath('//a[contains(concat(" ", @href, " "), "country_of_origin")]/text()').getall()
+public = response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()[1]
+countries_of_origin (list) = response.xpath('//a[contains(concat(" ", @href, " "), "country_of_origin")]/text()').getall()
 original_languages = response.xpath('//a[contains(concat(" ", @href, " "), "primary_language")]/text()').getall()
 
 
