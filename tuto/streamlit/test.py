@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 import plotly_express as px
 import streamlit as st
-from feature_engineering import preprocess_data
-from sklearn.ensemble import RandomForestRegressor
 
 # set the app's title
 st.title("Text Elements")

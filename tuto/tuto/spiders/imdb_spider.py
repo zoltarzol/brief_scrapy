@@ -1,9 +1,9 @@
 import scrapy, re
-from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
-from tuto.items import IMDBMovie
+from scrapy.linkextractors import LinkExtractor
 from scrapy.exceptions import CloseSpider
-from scrapy.http import HtmlResponse
+from tuto.items import IMDBMovie
+#from scrapy.http import HtmlResponse
 # from dataclasses import dataclass, field
 # from typing import Optional
 
@@ -15,34 +15,32 @@ class IMDBSpider(CrawlSpider):
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
 
     start_urls = ['https://www.imdb.com/chart/top/']
-    
-    # spécifie l'ordre d'export des attributs de IMDBMovie (dans le CSV résultant par exemple)
+
     custom_settings = {
-    'FEED_EXPORT_FIELDS': ["title","original_title","score","genre","release_year","length_in_minutes","synopsis","directors","actors","public","countries_of_origin","original_languages"],
-    'ITEM_PIPELINES': {
-            'tuto.pipelines.MongoMovies' : 400
-        }
+    # spécifie l'ordre d'export des attributs de IMDBMovie (dans le CSV résultant par exemple)
+    'FEED_EXPORT_FIELDS': ["title","original_title","score","genres","release_year","length_in_minutes","synopsis","directors","actors","public","countries_of_origin","original_languages"],
     }
 
     lang = 'en-US'
 
-    limit = 2
+    limit = 260
 
     # movies = [IMDBMovie()]
 
-    le_films_details = LinkExtractor(restrict_xpaths="//td[@class='titleColumn']/a")
-    le_films_details_acteurs = LinkExtractor(restrict_xpaths='//*[@id="iconContext-chevron-right-inline"]/path')
+    top_movies_page = LinkExtractor(restrict_xpaths="//td[@class='titleColumn']/a")
 
-    rule_films_details = Rule(le_films_details,
-                             callback='parse_item',
+    movie_details_page = LinkExtractor(restrict_xpaths='//section[@class="ipc-page-background ipc-page-background--baseAlt sc-9497c711-0 fZhWtO"]')
+
+    rule_top_movies_page = Rule(top_movies_page,
+                             callback='parse_items',
                               follow=False)
     
-    rule_films_details_acts = Rule(le_films_details_acteurs,
-                            callback='parse_item',
-                            follow=True)
+    rule_movie_details_page = Rule(movie_details_page,
+                            callback='parse_items',
+                            follow=False)
                             
     rules = (
-      rule_films_details  , rule_films_details_acts
+      rule_top_movies_page, rule_movie_details_page
     )
 
     def start_requests(self):
@@ -52,27 +50,28 @@ class IMDBSpider(CrawlSpider):
 
     def parse_items(self, response):
         print(response._get_url())
-        
-        if self.start_urls[0]==response._get_url():
-            return
-       
+             
         scrape_count = self.crawler.stats.get_value('item_scraped_count')
         if scrape_count == self.limit:
             raise CloseSpider("Limit reached")
         
-        title = response.xpath('//*[contains(concat(" ", @class, " "), "")]/text()').getall()
-        # print(title)
+        title = response.xpath('//*[contains(concat(" ", @data-testid, " "), "hero-title-block__title")]/text()').get()
+        print("rank:",scrape_count,"\nTitle:",title)
 
-        original_title = response.xpath('//*[contains(concat(" ", @class, " "), "gwBsXc")]/text()').getall()
-        # print(original_title)
+        original_title_temp = response.xpath('//*[contains(concat(" ", @class, " "), "gwBsXc")]/text()').get()
+
+        if original_title_temp == None:
+            original_title = original_title_temp
+        else:
+            original_title = original_title_temp[16:]
         
-        score = response.xpath('//*[contains(concat(" ", @class, " "), "jGRxWM")]/text()').getall()[0]
+        score = float(response.xpath('//*[contains(concat(" ", @class, " "), "jGRxWM")]/text()').getall()[0])
         # print(score)
 
         genres = response.xpath('//a[contains(concat(" ", @class, " "), "bYNgQ")]/span[@class="ipc-chip__text"]/text()').getall()
         # print(genres)
 
-        release_year = response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()[0].strip('()')
+        release_year = int(response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()[0].strip('()'))
         # print(release_year)
 
         tmp = response.xpath('//ul[contains(concat(" ", @class, " "), "kqWovI")]/li[@class="ipc-inline-list__item"]/text()').getall()
@@ -91,27 +90,38 @@ class IMDBSpider(CrawlSpider):
         actors = response.xpath('//a[@data-testid="title-cast-item__actor"]/text()').getall()
         # print(actors)
 
-        public = response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()[1]
-        # print(public)
+        public_temp = response.xpath('//a[contains(concat(" ", @class, " "), "WIUyh")]/text()').getall()
+        print(public_temp)
+
+        if not public_temp:
+            public = public_temp
+        else:
+            try:
+                public = public_temp[1]
+            except IndexError:
+                public = public_temp[0]
 
         countries_of_origin = response.xpath('//a[contains(concat(" ", @href, " "), "country_of_origin")]/text()').getall()
         # print(countries_of_origin)
 
         original_languages = response.xpath('//a[contains(concat(" ", @href, " "), "primary_language")]/text()').getall()
         # print(original_languages)
-
+        
         movie_item = IMDBMovie(title=title,original_title=original_title,score=score,genres=genres,release_year=release_year,length_in_minutes=length_in_minutes,synopsis=synopsis,directors=directors,actors=actors,public=public,countries_of_origin=countries_of_origin,original_languages=original_languages)
         
         yield movie_item
+
+    # def parse(self, response):
+    #     yield response._get_url()
+
+    # # premiers tests, avant l'utilisation de parse_items    
+    # def parse(self, response):
+    #     print(response._get_url())
+    #     temp = response.xpath('//div[contains(concat(" ", @class, " "), "fjLeDR")]//a[contains(concat(" ", @href, " "), "tt_ov_dr")]/text()').getall()
         
-    # premiers tests, avant l'utilisation de parse_items    
-    def parse(self, response):
-        print(response._get_url())
-        temp = response.xpath('//div[contains(concat(" ", @class, " "), "fjLeDR")]//a[contains(concat(" ", @href, " "), "tt_ov_dr")]/text()').getall()
-        
-        print("----------------------------------------------------")
-        print(temp)
-        print("----------------------------------------------------")
+    #     print("----------------------------------------------------")
+    #     print(temp)
+    #     print("----------------------------------------------------")
 
 
         # # Pour pour tard : problème non résolu de la récupération du rank dans le code HTML

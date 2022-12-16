@@ -60,7 +60,8 @@ ROBOTSTXT_OBEY = True
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
-# Enable and configure the AutoThrottle extension (disabled by default)
+# Enable and configure the AutoThrottle 
+# extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
 # The initial download delay
@@ -90,6 +91,8 @@ LOG_LEVEL='DEBUG'
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
+# DOWNLOADER_CLIENT_TLS_METHOD = 'TLSv1_2'
+
 ITEM_PIPELINES = {
-   'imdb.pipelines.Movies': 300,
+   'tuto.pipelines.MongoMovies': 300,
 }

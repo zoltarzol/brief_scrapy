@@ -55,9 +55,9 @@ sudo apt upgrade
 sudo apt --fix-broken install
 conda install importlib-metadata  
 conda install -c plotly plotly_express
-conda install mongodb-compass
+conda install -c anaconda mongodb
 conda install networkx
-conda install seaborn
+conda install -c anaconda seaborn (dû faire un pip install)
 pip3 install 'pymongo[srv]'
 
 --on tente
