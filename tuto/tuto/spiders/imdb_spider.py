@@ -55,8 +55,13 @@ class IMDBSpider(CrawlSpider):
         if scrape_count == self.limit:
             raise CloseSpider("Limit reached")
         
+        if not scrape_count:
+            scrape_count = 1
+        else:
+            scrape_count += 1
+
         title = response.xpath('//*[contains(concat(" ", @data-testid, " "), "hero-title-block__title")]/text()').get()
-        print("rank:",scrape_count,"\nTitle:",title)
+        print("ID:",scrape_count,"\nTitle:",title)
 
         original_title_temp = response.xpath('//*[contains(concat(" ", @class, " "), "gwBsXc")]/text()').get()
 
@@ -77,6 +82,8 @@ class IMDBSpider(CrawlSpider):
         tmp = response.xpath('//ul[contains(concat(" ", @class, " "), "kqWovI")]/li[@class="ipc-inline-list__item"]/text()').getall()
         if len(tmp)>2:
             length_in_minutes = int(tmp[0])*60 + int(tmp[3])
+        elif tmp[1] == 'h':
+            length_in_minutes = int(tmp[0])*60
         else:
             length_in_minutes = int(tmp[0])
         # print(length_in_minutes)
