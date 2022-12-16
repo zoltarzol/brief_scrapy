@@ -1,13 +1,17 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+import pymongo
 
 
-class TutoPipeline:
-    def process_item(self, item, spider):
+class MongoMovies:
+
+    def __init__(self):
+        client = pymongo.MongoClient(
+            'mongodb+srv://zoltar:"+gargaMEL80!+"@zoltar.dbytmfn.mongodb.net/?retryWrites=true&w=majority'
+        )
+
+        db = client['IMDB']
+        collection = db['Movies']
+
+    def process_item(self, item, collection):
+        collection.insert_one(dict(item))
         return item
